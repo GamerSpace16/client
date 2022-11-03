@@ -25,6 +25,7 @@ import { defaultPermissions, hasPermission } from "@snailycad/permissions";
 import { shouldCheckCitizenUserId } from "lib/citizen/hasCitizenAccess";
 import type * as APITypes from "@snailycad/types/api";
 import { ExtendedBadRequest } from "src/exceptions/ExtendedBadRequest";
+import { setEndedSuspendedLicenses } from "lib/citizen/setEndedSuspendedLicenses";
 
 export const vehicleSearchInclude = {
   model: { include: { value: true } },
@@ -115,7 +116,7 @@ const weaponsInclude = {
 @Controller("/search")
 @UseBeforeEach(IsAuth)
 @ContentType("application/json")
-export class SearchController {
+export class LeoSearchController {
   @Post("/name")
   @Description("Search citizens by their name, surname or fullname. Returns the first 35 results.")
   async searchName(
@@ -160,6 +161,10 @@ export class SearchController {
             name: { contains: surname, mode: "insensitive" },
             surname: { contains: name, mode: "insensitive" },
           },
+          { driversLicenseNumber: { contains: name, mode: "insensitive" } },
+          { weaponLicenseNumber: { contains: name, mode: "insensitive" } },
+          { waterLicenseNumber: { contains: name, mode: "insensitive" } },
+          { pilotLicenseNumber: { contains: name, mode: "insensitive" } },
           { socialSecurityNumber: name },
         ],
       },
@@ -168,7 +173,7 @@ export class SearchController {
     });
 
     return appendConfidential(
-      await appendCustomFields(citizens, CustomFieldCategory.CITIZEN),
+      await appendCustomFields(setEndedSuspendedLicenses(citizens), CustomFieldCategory.CITIZEN),
     ) as APITypes.PostLeoSearchCitizenData;
   }
 

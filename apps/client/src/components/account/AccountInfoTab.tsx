@@ -2,10 +2,8 @@ import { TabsContent } from "components/shared/TabList";
 import { useTranslations } from "use-intl";
 import { Form, Formik } from "formik";
 import { useAuth } from "context/AuthContext";
-import { FormField } from "components/form/FormField";
-import { Input, PasswordInput } from "components/form/inputs/Input";
 import { FormRow } from "components/form/FormRow";
-import { Button } from "components/Button";
+import { Button, TextField } from "@snailycad/ui";
 import { useModal } from "state/modalState";
 import { ModalIds } from "types/ModalIds";
 import { ManagePermissionsModal } from "components/admin/manage/users/ManagePermissionsModal";
@@ -35,26 +33,46 @@ export function AccountInfoTab() {
         {({ values, errors }) => (
           <Form className="mt-2">
             <FormRow>
-              <FormField label="Account id" errorMessage={errors.id}>
-                <PasswordInput disabled defaultValue={values.id} name="id" />
-              </FormField>
+              <TextField
+                type="password"
+                label="Account id"
+                errorMessage={errors.id}
+                isDisabled
+                defaultValue={values.id}
+                name="id"
+              />
 
-              <FormField label={t("Auth.username")} errorMessage={errors.username}>
-                <Input disabled defaultValue={values.username} name="username" />
-              </FormField>
+              <TextField
+                label={t("Auth.username")}
+                errorMessage={errors.username}
+                isDisabled
+                isReadOnly
+                defaultValue={values.username}
+                name="username"
+              />
             </FormRow>
 
             <FormRow>
-              <FormField label="Discord id" errorMessage={errors.discordId}>
-                <Input disabled defaultValue={String(values.discordId)} name="discordId" />
-              </FormField>
+              <TextField
+                label="Discord Id"
+                errorMessage={errors.discordId}
+                isDisabled
+                isReadOnly
+                defaultValue={String(values.discordId)}
+                name="discordId"
+              />
 
-              <FormField label="Steam id" errorMessage={errors.steamId}>
-                <Input disabled defaultValue={String(values.steamId)} name="steamId" />
-              </FormField>
+              <TextField
+                label="Steam Id"
+                errorMessage={errors.steamId}
+                isDisabled
+                isReadOnly
+                defaultValue={String(values.steamId)}
+                name="steamId"
+              />
             </FormRow>
 
-            <Button onClick={handleViewPermissions} className="mt-4">
+            <Button onPress={handleViewPermissions} className="mt-4">
               {t("Account.viewMyPermissions")}
             </Button>
 

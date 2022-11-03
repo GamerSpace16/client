@@ -2,11 +2,9 @@ import * as React from "react";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useTranslations } from "use-intl";
 
-import { Button } from "components/Button";
-import { Loader } from "components/Loader";
+import { Textarea, Loader, Input, Button } from "@snailycad/ui";
 import { useAuth } from "context/AuthContext";
 import useFetch from "lib/useFetch";
-import { Input } from "components/form/inputs/Input";
 import { JailTimeScale, MiscCadSettings } from "@snailycad/types";
 import { ImageSelectInput, validateFile } from "components/form/inputs/ImageSelectInput";
 import { SettingsFormField } from "components/form/SettingsFormField";
@@ -14,9 +12,10 @@ import { TabsContent } from "components/shared/TabList";
 import { SettingsTabs } from "src/pages/admin/manage/cad-settings";
 import { Select } from "components/form/Select";
 import { toastMessage } from "lib/toastMessage";
-import { Textarea } from "components/form/Textarea";
 import type { PutCADMiscSettingsData } from "@snailycad/types/api";
 import { useFeatureEnabled } from "hooks/useFeatureEnabled";
+import { InactivityTimeoutSection } from "./misc-features/InactivityTimeoutSection";
+import { LicenseNumbersSection } from "./misc-features/LicenseNumbersSection";
 
 export function MiscFeatures() {
   const [headerId, setHeaderId] = React.useState<(File | string) | null>(null);
@@ -122,6 +121,11 @@ export function MiscFeatures() {
     unitInactivityTimeout: miscSettings.unitInactivityTimeout ?? "",
     activeWarrantsInactivityTimeout: miscSettings.activeWarrantsInactivityTimeout ?? "",
     boloInactivityTimeout: miscSettings.boloInactivityTimeout ?? "",
+
+    driversLicenseNumberLength: miscSettings.driversLicenseNumberLength ?? 8,
+    weaponLicenseNumberLength: miscSettings.weaponLicenseNumberLength ?? 8,
+    pilotLicenseNumberLength: miscSettings.pilotLicenseNumberLength ?? 6,
+    waterLicenseNumberLength: miscSettings.waterLicenseNumberLength ?? 8,
   };
 
   return (
@@ -175,89 +179,8 @@ export function MiscFeatures() {
               </SettingsFormField>
             </section>
 
-            <section>
-              <h3 className="font-semibold text-xl mb-3">Inactivity Timeouts</h3>
-
-              <SettingsFormField
-                optional
-                action="short-input"
-                label="911-call Inactivity Timeout"
-                description="Calls that have not been updated after this timeout will be automatically ended. The format must be in minutes. (Default: none)"
-                errorMessage={errors.call911InactivityTimeout}
-              >
-                <Input
-                  type="number"
-                  name="call911InactivityTimeout"
-                  value={values.call911InactivityTimeout}
-                  onChange={handleChange}
-                  placeholder="120"
-                />
-              </SettingsFormField>
-
-              <SettingsFormField
-                optional
-                action="short-input"
-                label="Incident Inactivity Timeout"
-                description="Incidents that have not been updated after this timeout will be automatically ended. The format must be in minutes. (Default: none)"
-                errorMessage={errors.incidentInactivityTimeout}
-              >
-                <Input
-                  type="number"
-                  name="incidentInactivityTimeout"
-                  value={values.incidentInactivityTimeout}
-                  onChange={handleChange}
-                  placeholder="120"
-                />
-              </SettingsFormField>
-
-              <SettingsFormField
-                optional
-                action="short-input"
-                label="Unit Inactivity Timeout"
-                description="Units that have not been updated after this timeout will be automatically set off-duty. The format must be in minutes. (Default: none)"
-                errorMessage={errors.unitInactivityTimeout}
-              >
-                <Input
-                  type="number"
-                  name="unitInactivityTimeout"
-                  value={values.unitInactivityTimeout}
-                  onChange={handleChange}
-                  placeholder="120"
-                />
-              </SettingsFormField>
-
-              <SettingsFormField
-                optional
-                action="short-input"
-                label="BOLO Inactivity Timeout"
-                description="BOLOs that have not been updated after this timeout will be automatically ended. The format must be in minutes. (Default: none)"
-                errorMessage={errors.boloInactivityTimeout}
-              >
-                <Input
-                  type="number"
-                  name="boloInactivityTimeout"
-                  value={values.boloInactivityTimeout}
-                  onChange={handleChange}
-                  placeholder="120"
-                />
-              </SettingsFormField>
-
-              <SettingsFormField
-                optional
-                action="short-input"
-                label="Active Warrants Inactivity Timeout"
-                description="Active Warrants that have not been updated after this timeout will be automatically set as non-active. The format must be in minutes. (Default: none)"
-                errorMessage={errors.activeWarrantsInactivityTimeout}
-              >
-                <Input
-                  type="number"
-                  name="activeWarrantsInactivityTimeout"
-                  value={values.activeWarrantsInactivityTimeout}
-                  onChange={handleChange}
-                  placeholder="120"
-                />
-              </SettingsFormField>
-            </section>
+            <InactivityTimeoutSection />
+            <LicenseNumbersSection />
 
             <section>
               <h3 className="font-semibold text-xl mb-3">Other</h3>

@@ -2,13 +2,10 @@ import { UPDATE_UNIT_CALLSIGN_SCHEMA } from "@snailycad/schemas";
 import type { DivisionValue } from "@snailycad/types";
 import type { PutManageUnitCallsignData } from "@snailycad/types/api";
 import { isUnitOfficer } from "@snailycad/utils";
-import { Button } from "components/Button";
-import { FormField } from "components/form/FormField";
-import { Input } from "components/form/inputs/Input";
+import { Button, Loader, TextField } from "@snailycad/ui";
 import { CallSignPreview } from "components/leo/CallsignPreview";
 import { AdvancedSettings } from "components/leo/modals/AdvancedSettings";
 import { makeDivisionsObjectMap } from "components/leo/modals/ManageOfficerModal";
-import { Loader } from "components/Loader";
 import { Modal } from "components/modal/Modal";
 import { Form, Formik } from "formik";
 import { handleValidate } from "lib/handleValidate";
@@ -65,15 +62,24 @@ export function ManageUnitCallsignModal({ unit }: Props) {
       className="min-w-[600px]"
     >
       <Formik validate={validate} initialValues={INITIAL_VALUES} onSubmit={handleSubmit}>
-        {({ handleChange, errors, values, isValid }) => (
+        {({ setFieldValue, errors, values, isValid }) => (
           <Form>
-            <FormField errorMessage={errors.callsign} label={t("Leo.callsign1")}>
-              <Input name="callsign" value={values.callsign} onChange={handleChange} />
-            </FormField>
+            <TextField
+              errorMessage={errors.callsign}
+              label={t("Leo.callsign1")}
+              autoFocus
+              name="callsign"
+              onChange={(value) => setFieldValue("callsign", value)}
+              value={values.callsign}
+            />
 
-            <FormField errorMessage={errors.callsign2} label={t("Leo.callsign2")}>
-              <Input name="callsign2" value={values.callsign2} onChange={handleChange} />
-            </FormField>
+            <TextField
+              errorMessage={errors.callsign2}
+              label={t("Leo.callsign2")}
+              name="callsign2"
+              onChange={(value) => setFieldValue("callsign2", value)}
+              value={values.callsign2}
+            />
 
             <CallSignPreview department={unit.department} divisions={divisions} />
 
@@ -82,7 +88,7 @@ export function ManageUnitCallsignModal({ unit }: Props) {
             <footer className="flex justify-end mt-5">
               <Button
                 type="reset"
-                onClick={() => closeModal(ModalIds.ManageUnitCallsign)}
+                onPress={() => closeModal(ModalIds.ManageUnitCallsign)}
                 variant="cancel"
               >
                 {t("Common.cancel")}

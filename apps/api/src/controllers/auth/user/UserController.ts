@@ -22,7 +22,7 @@ import type { User } from "@snailycad/types";
 @Controller("/user")
 @UseBefore(IsAuth)
 @ContentType("application/json")
-export class AccountController {
+export class UserController {
   private socket: Socket;
   constructor(socket: Socket) {
     this.socket = socket;
@@ -64,6 +64,7 @@ export class AccountController {
         statusUpdate: data.soundSettings.statusUpdate,
         incomingCall: data.soundSettings.incomingCall,
         speech: data.soundSettings.speech,
+        speechVoice: data.soundSettings.speechVoice,
       };
 
       const updated = await prisma.userSoundSettings.upsert({

@@ -1,7 +1,7 @@
 import type * as React from "react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { classNames } from "lib/classNames";
-import { Button, ButtonProps, buttonSizes, buttonVariants } from "components/Button";
+import { Button, ButtonProps, buttonSizes, buttonVariants } from "@snailycad/ui";
 import Link from "next/link";
 
 interface Props extends DropdownMenu.MenuContentProps, DropdownMenu.DropdownMenuProps {
@@ -44,7 +44,7 @@ Dropdown.Item = function DropdownItem({ children, ...rest }: Omit<ButtonProps, "
         variant="transparent"
         className={classNames(
           "my-0.5 rounded-md transition-colors w-full text-left bg-transparent",
-          "hover:bg-gray-200 dark:hover:bg-secondary focus:bg-gray-200 dark:focus:bg-secondary",
+          "hover:bg-gray-400 focus:bg-gray-400 dark:hover:bg-secondary dark:focus:bg-secondary",
           rest.className,
         )}
       >
@@ -54,22 +54,24 @@ Dropdown.Item = function DropdownItem({ children, ...rest }: Omit<ButtonProps, "
   );
 };
 
-Dropdown.LinkItem = function LinkItem({ children, ...rest }: JSX.IntrinsicElements["a"]) {
+Dropdown.LinkItem = function LinkItem({
+  children,
+  ...rest
+}: Omit<JSX.IntrinsicElements["a"], "ref">) {
   return (
     <DropdownMenu.Item className="hover:outline-none">
-      <Link href={rest.href!}>
-        <a
-          className={classNames(
-            "outline-none block rounded-md transition-colors w-full text-left bg-transparent",
-            "dark:hover:bg-secondary hover:bg-gray-400 focus:bg-gray-400 dark:focus:bg-secondary",
-            buttonSizes.sm,
-            buttonVariants.transparent,
-            rest.className,
-          )}
-          {...rest}
-        >
-          {children}
-        </a>
+      <Link
+        {...rest}
+        className={classNames(
+          "outline-none block rounded-md transition-colors w-full text-left bg-transparent",
+          "dark:hover:bg-secondary hover:bg-gray-400 focus:bg-gray-400 dark:focus:bg-secondary",
+          buttonSizes.sm,
+          buttonVariants.transparent,
+          rest.className,
+        )}
+        href={rest.href!}
+      >
+        {children}
       </Link>
     </DropdownMenu.Item>
   );

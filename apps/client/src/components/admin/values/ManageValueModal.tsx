@@ -8,27 +8,27 @@ import {
   BASE_VALUE_SCHEMA,
   CALL_TYPE_SCHEMA,
 } from "@snailycad/schemas";
-import { Button } from "components/Button";
 import { FormField } from "components/form/FormField";
-import { Input } from "components/form/inputs/Input";
-import { Loader } from "components/Loader";
+import { Loader, Button, SelectField, TextField } from "@snailycad/ui";
 import { Modal } from "components/modal/Modal";
 import { Form, Formik, FormikHelpers } from "formik";
 import { handleValidate } from "lib/handleValidate";
 import useFetch from "lib/useFetch";
 import { useModal } from "state/modalState";
 import { useValues } from "context/ValuesContext";
-import { AnyValue, DriversLicenseCategoryType, EmployeeAsEnum, ValueType } from "@snailycad/types";
+import {
+  AnyValue,
+  DriversLicenseCategoryType,
+  EmployeeAsEnum,
+  QualificationValueType,
+  ValueType,
+} from "@snailycad/types";
 import { useTranslations } from "use-intl";
 import { Select } from "components/form/Select";
 import hexColor from "hex-color-regex";
 import { ModalIds } from "types/ModalIds";
 import { DepartmentFields } from "./manage-modal/DepartmentFields";
-import {
-  StatusValueFields,
-  useDefaultDepartments,
-  WHAT_PAGES_LABELS,
-} from "./manage-modal/StatusValueFields";
+import { StatusValueFields, useDefaultDepartments } from "./manage-modal/StatusValueFields";
 import { LicenseFields } from "./manage-modal/LicenseFields";
 import {
   isEmployeeValue,
@@ -42,10 +42,10 @@ import {
   isDLCategoryValue,
   isCallTypeValue,
   isOfficerRankValue,
+  isAddressValue,
 } from "@snailycad/utils/typeguards";
 import { QualificationFields } from "./manage-modal/QualificationFields";
 import { ImageSelectInput, validateFile } from "components/form/inputs/ImageSelectInput";
-import { Textarea } from "components/form/Textarea";
 import { Toggle } from "components/form/Toggle";
 import type { PatchValueByIdData, PostValuesData } from "@snailycad/types/api";
 import {
@@ -54,6 +54,7 @@ import {
   makeDefaultWhatPages,
 } from "lib/admin/values/utils";
 import { DivisionFields } from "./manage-modal/DivisionFields";
+import { AddressFields } from "./manage-modal/AddressFields";
 
 interface Props {
   type: ValueType;
@@ -108,7 +109,7 @@ export function ManageValueModal({ onCreate, onUpdate, clType: dlType, type, val
     const data = {
       ...values,
       type: dlType ? dlType : values.type,
-      whatPages: values.whatPages?.map((v) => v.value),
+      whatPages: values.whatPages,
       departments: values.departments?.map((v) => v.value),
       officerRankDepartments: values.officerRankDepartments?.map((v) => v.value),
     };
@@ -175,7 +176,9 @@ export function ManageValueModal({ onCreate, onUpdate, clType: dlType, type, val
         ? value.description ?? ""
         : "",
     qualificationType:
-      value && isUnitQualification(value) ? value.qualificationType : "qualification",
+      value && isUnitQualification(value)
+        ? value.qualificationType
+        : QualificationValueType.QUALIFICATION,
 
     shouldDo: value && isStatusValue(value) ? value.shouldDo : "",
     color: value && isStatusValue(value) ? value.color ?? "" : "",
@@ -184,13 +187,7 @@ export function ManageValueModal({ onCreate, onUpdate, clType: dlType, type, val
       value && (isStatusValue(value) || isUnitQualification(value))
         ? defaultDepartments(value)
         : undefined,
-    whatPages:
-      value && isStatusValue(value)
-        ? makeDefaultWhatPages(value)?.map((v) => ({
-            label: WHAT_PAGES_LABELS[v],
-            value: v,
-          }))
-        : [],
+    whatPages: value && isStatusValue(value) ? makeDefaultWhatPages(value) : [],
 
     pairedUnitTemplate: value && isDivisionValue(value) ? value.pairedUnitTemplate ?? "" : "",
     departmentId: value && isDivisionValue(value) ? value.departmentId : "",
@@ -211,6 +208,9 @@ export function ManageValueModal({ onCreate, onUpdate, clType: dlType, type, val
     officerRankImageId: "",
     officerRankDepartments:
       value && isOfficerRankValue(value) ? defaultDepartments(value) : undefined,
+
+    postal: value && isAddressValue(value) ? value.postal ?? "" : "",
+    county: value && isAddressValue(value) ? value.county ?? "" : "",
 
     showPicker: false,
     image: "",
@@ -243,12 +243,17 @@ export function ManageValueModal({ onCreate, onUpdate, clType: dlType, type, val
       isOpen={isOpen(ModalIds.ManageValue)}
     >
       <Formik validate={validate} onSubmit={onSubmit} initialValues={INITIAL_VALUES}>
-        {({ handleChange, values, errors }) => (
+        {({ handleChange, setFieldValue, values, errors }) => (
           <Form>
             {type === ValueType.DIVISION ? null : (
-              <FormField errorMessage={errors.value} label="Value">
-                <Input autoFocus name="value" onChange={handleChange} value={values.value} />
-              </FormField>
+              <TextField
+                errorMessage={errors.value}
+                label="Value"
+                autoFocus
+                name="value"
+                onChange={(value) => setFieldValue("value", value)}
+                value={values.value}
+              />
             )}
 
             {type === ValueType.LICENSE ? <LicenseFields /> : null}
@@ -259,38 +264,45 @@ export function ManageValueModal({ onCreate, onUpdate, clType: dlType, type, val
               <QualificationFields image={image} setImage={setImage} />
             ) : null}
 
+            {type === ValueType.ADDRESS ? <AddressFields /> : null}
+
             {type === ValueType.BUSINESS_ROLE ? (
-              <FormField label="As (this is so the database knows what to use.)">
-                <Select
-                  values={BUSINESS_VALUES}
-                  name="as"
-                  onChange={handleChange}
-                  value={values.as}
-                />
-              </FormField>
+              <SelectField
+                errorMessage={errors.as}
+                label="As (this is so the database knows what to use.)"
+                options={BUSINESS_VALUES}
+                name="as"
+                onSelectionChange={(key) => setFieldValue("as", key)}
+                selectedKey={values.as}
+              />
             ) : null}
 
             {["VEHICLE", "WEAPON"].includes(type) ? (
-              <FormField optional label="Game Hash">
-                <Input name="hash" onChange={handleChange} value={values.hash} />
-              </FormField>
+              <TextField
+                isOptional
+                errorMessage={errors.hash}
+                label="Game Hash"
+                name="hash"
+                onChange={(value) => setFieldValue("hash", value)}
+                value={values.hash}
+              />
             ) : null}
 
             {type === ValueType.CALL_TYPE ? (
-              <FormField errorMessage={errors.priority} optional label="Priority">
-                <Input
-                  type="number"
-                  name="priority"
-                  onChange={handleChange}
-                  value={values.priority}
-                />
-              </FormField>
+              <TextField
+                type="number"
+                isOptional
+                errorMessage={errors.priority}
+                label="Priority"
+                name="priority"
+                onChange={(value) => setFieldValue("priority", value)}
+                value={values.priority}
+              />
             ) : null}
 
             {type === ValueType.OFFICER_RANK ? (
               <>
                 <ImageSelectInput valueKey="officerRankImageId" image={image} setImage={setImage} />
-
                 <FormField optional label="Departments">
                   <Select
                     isMulti
@@ -308,9 +320,15 @@ export function ManageValueModal({ onCreate, onUpdate, clType: dlType, type, val
             ) : null}
 
             {type === ValueType.DRIVERSLICENSE_CATEGORY ? (
-              <FormField optional label="Description">
-                <Textarea name="description" onChange={handleChange} value={values.description} />
-              </FormField>
+              <TextField
+                isTextarea
+                isOptional
+                errorMessage={errors.description}
+                label="Description"
+                name="description"
+                onChange={(value) => setFieldValue("description", value)}
+                value={values.description}
+              />
             ) : null}
 
             {type === "CODES_10" ? <StatusValueFields /> : null}
@@ -322,7 +340,7 @@ export function ManageValueModal({ onCreate, onUpdate, clType: dlType, type, val
             <footer className="flex justify-end mt-5">
               <Button
                 type="reset"
-                onClick={() => closeModal(ModalIds.ManageValue)}
+                onPress={() => closeModal(ModalIds.ManageValue)}
                 variant="cancel"
               >
                 Cancel

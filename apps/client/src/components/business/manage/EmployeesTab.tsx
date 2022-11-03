@@ -1,7 +1,7 @@
 import * as React from "react";
 import { TabsContent } from "components/shared/TabList";
 import { useTranslations } from "use-intl";
-import { Button } from "components/Button";
+import { Button } from "@snailycad/ui";
 import { FullEmployee, useBusinessState } from "state/businessState";
 import { useModal } from "state/modalState";
 import { ModalIds } from "types/ModalIds";
@@ -97,7 +97,7 @@ export function EmployeesTab() {
                   employee.role?.as === EmployeeAsEnum.OWNER ||
                   employee.whitelistStatus === WhitelistStatus.PENDING
                 }
-                onClick={() => handleManageClick(employee)}
+                onPress={() => handleManageClick(employee)}
                 variant="success"
               >
                 {common("manage")}
@@ -108,7 +108,7 @@ export function EmployeesTab() {
                   employee.role?.as === EmployeeAsEnum.OWNER ||
                   employee.whitelistStatus === WhitelistStatus.PENDING
                 }
-                onClick={() => handleFireClick(employee)}
+                onPress={() => handleFireClick(employee)}
                 className="ml-2"
                 variant="danger"
               >
@@ -132,7 +132,6 @@ export function EmployeesTab() {
         title={t("fireEmployee")}
         description={t.rich("alert_fireEmployee", {
           employee: tempEmployee && `${tempEmployee.citizen.name} ${tempEmployee.citizen.surname}`,
-          span: (children) => <span className="font-semibold">{children}</span>,
         })}
         onDeleteClick={handleFireEmployee}
         deleteText={t("fire")}

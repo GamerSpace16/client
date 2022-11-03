@@ -3,7 +3,7 @@ import { Star } from "react-bootstrap-icons";
 import Link from "next/link";
 import type { GetServerSideProps } from "next";
 import { dataToSlate, Editor } from "components/editor/Editor";
-import { Button, buttonVariants } from "components/Button";
+import { BreadcrumbItem, Breadcrumbs, Button, buttonVariants } from "@snailycad/ui";
 import { Layout } from "components/Layout";
 import { getSessionUser } from "lib/auth";
 import { getTranslations } from "lib/getTranslation";
@@ -92,10 +92,8 @@ export default function BusinessId(props: Props) {
       <Layout className="dark:text-white">
         <p>
           {t("businessWhitelistedCAD")}{" "}
-          <Link href="/business">
-            <a href="/business" className="underline">
-              Return
-            </a>
+          <Link href="/business" className="underline">
+            Return
           </Link>
         </p>
       </Layout>
@@ -104,23 +102,28 @@ export default function BusinessId(props: Props) {
 
   return (
     <Layout className="dark:text-white">
+      <Breadcrumbs>
+        <BreadcrumbItem href="/business">{t("business")}</BreadcrumbItem>
+        <BreadcrumbItem href={`/citizen/${currentBusiness.id}`}>
+          {currentBusiness.name}
+        </BreadcrumbItem>
+      </Breadcrumbs>
+
       <header className="flex items-center justify-between">
         <Title className="!mb-0">{currentBusiness.name}</Title>
 
         <div>
           {currentEmployee.canCreatePosts ? (
-            <Button onClick={() => openModal(ModalIds.ManageBusinessPost)} className="mr-2">
+            <Button onPress={() => openModal(ModalIds.ManageBusinessPost)} className="mr-2">
               {t("createPost")}
             </Button>
           ) : null}
           {owner?.citizenId === currentEmployee.citizenId ? (
-            <Link href={`/business/${currentBusiness.id}/${currentEmployee.id}/manage`}>
-              <a
-                href={`/business/${currentBusiness.id}/${currentEmployee.id}/manage`}
-                className={classNames(buttonVariants.default, "p-1 px-4 rounded-md")}
-              >
-                {common("manage")}
-              </a>
+            <Link
+              href={`/business/${currentBusiness.id}/${currentEmployee.id}/manage`}
+              className={classNames(buttonVariants.default, "p-1 px-4 rounded-md")}
+            >
+              {common("manage")}
             </Link>
           ) : null}
         </div>
@@ -139,11 +142,11 @@ export default function BusinessId(props: Props) {
 
                     {post.employeeId === currentEmployee.id ? (
                       <div>
-                        <Button onClick={() => handleEdit(post)} size="xs" variant="success">
+                        <Button onPress={() => handleEdit(post)} size="xs" variant="success">
                           {common("edit")}
                         </Button>
                         <Button
-                          onClick={() => handleDelete(post)}
+                          onPress={() => handleDelete(post)}
                           className="ml-2"
                           size="xs"
                           variant="danger"

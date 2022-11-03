@@ -136,8 +136,8 @@ export class TowController {
       });
 
       try {
-        const data = createWebhookData(impoundedVehicle);
-        await sendDiscordWebhook(DiscordWebhookType.VEHICLE_IMPOUNDED, data);
+        const data = createVehicleImpoundedWebhookData(impoundedVehicle);
+        await sendDiscordWebhook({ type: DiscordWebhookType.VEHICLE_IMPOUNDED, data });
       } catch (error) {
         console.error("Could not send Discord webhook.", error);
       }
@@ -267,7 +267,7 @@ export class TowController {
   }
 }
 
-function createWebhookData(
+export function createVehicleImpoundedWebhookData(
   vehicle: RegisteredVehicle & {
     model: VehicleValue & { value: Value };
     registrationStatus: Value;

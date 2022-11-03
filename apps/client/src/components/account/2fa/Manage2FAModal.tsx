@@ -1,8 +1,5 @@
 import * as React from "react";
-import { Button } from "components/Button";
-import { FormField } from "components/form/FormField";
-import { Input, PasswordInput } from "components/form/inputs/Input";
-import { Loader } from "components/Loader";
+import { Button, Loader, TextField } from "@snailycad/ui";
 import { Modal } from "components/modal/Modal";
 import { useModal } from "state/modalState";
 import { Form, Formik, FormikHelpers } from "formik";
@@ -133,20 +130,22 @@ export function Manage2FAModal() {
       className="w-[500px]"
     >
       <Formik initialValues={INITIAL_VALUES} onSubmit={onSubmit}>
-        {({ handleChange, values, isValid, errors }) => (
+        {({ setFieldValue, values, isValid, errors }) => (
           <Form>
             {currentStep === Steps.EnterPassword ? (
-              <FormField errorMessage={errors.currentPassword} label={t("currentPassword")}>
-                <PasswordInput
-                  name="currentPassword"
-                  value={values.currentPassword}
-                  required
-                  onChange={(e) => {
-                    handleChange(e);
-                    setCurrentPassword(e.currentTarget.value);
-                  }}
-                />
-              </FormField>
+              <TextField
+                isRequired
+                autoFocus
+                type="password"
+                name="currentPassword"
+                value={values.currentPassword}
+                onChange={(value) => {
+                  setFieldValue("currentPassword", value);
+                  setCurrentPassword(value);
+                }}
+                errorMessage={errors.currentPassword}
+                label={t("currentPassword")}
+              />
             ) : null}
 
             {currentStep === Steps.ScanQRCode && dataUri ? (
@@ -180,20 +179,20 @@ export function Manage2FAModal() {
               <>
                 <p className="my-3 mb-5 text-neutral-700 dark:text-gray-400">{t("verifyCode")}</p>
 
-                <FormField errorMessage={errors.totpCode} label="Code">
-                  <Input
-                    autoFocus
-                    required
-                    name="totpCode"
-                    value={values.totpCode}
-                    onChange={handleChange}
-                  />
-                </FormField>
+                <TextField
+                  errorMessage={errors.totpCode}
+                  label="Code"
+                  autoFocus
+                  isRequired
+                  name="totpCode"
+                  value={values.totpCode}
+                  onChange={(value) => setFieldValue("totpCode", value)}
+                />
               </>
             ) : null}
 
             <footer className="mt-7 flex justify-end">
-              <Button type="reset" onClick={onCancel} variant="cancel">
+              <Button type="reset" onPress={onCancel} variant="cancel">
                 {common("cancel")}
               </Button>
               <Button

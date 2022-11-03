@@ -6,13 +6,10 @@ import { AUTH_SCHEMA } from "@snailycad/schemas";
 import { useTranslations } from "use-intl";
 
 import useFetch from "lib/useFetch";
-import { FormField } from "components/form/FormField";
-import { Input, PasswordInput } from "components/form/inputs/Input";
-import { Loader } from "components/Loader";
 import { handleValidate } from "lib/handleValidate";
 import type { GetServerSideProps } from "next";
 import { getTranslations } from "lib/getTranslation";
-import { Button } from "components/Button";
+import { Button, Loader, TextField } from "@snailycad/ui";
 import type { cad } from "@snailycad/types";
 import { handleRequest } from "lib/fetch";
 import { Title } from "components/shared/Title";
@@ -23,7 +20,7 @@ import { parseCookies } from "nookies";
 import { VersionDisplay } from "components/shared/VersionDisplay";
 import type { PostRegisterUserData } from "@snailycad/types/api";
 
-import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { GoogleReCaptchaProvider, useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 const INITIAL_VALUES = {
   username: "",
@@ -40,7 +37,7 @@ const hasGoogleCaptchaSiteKey =
   typeof process.env.NEXT_PUBLIC_GOOGLE_CAPTCHA_SITE_KEY === "string" &&
   process.env.NEXT_PUBLIC_GOOGLE_CAPTCHA_SITE_KEY.length > 0;
 
-export default function Register({ cad }: Props) {
+function Register({ cad }: Props) {
   const router = useRouter();
   const { state, execute } = useFetch();
   const t = useTranslations("Auth");
@@ -99,7 +96,7 @@ export default function Register({ cad }: Props) {
         <LocalhostDetector />
 
         <Formik validate={validate} onSubmit={onSubmit} initialValues={INITIAL_VALUES}>
-          {({ handleChange, errors, isValid }) => (
+          {({ setFieldValue, errors, isValid }) => (
             <Form className="w-full max-w-md p-6 bg-gray-100 rounded-lg shadow-md dark:bg-primary dark:border dark:border-secondary z-10">
               <header className="mb-3">
                 <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
@@ -107,37 +104,49 @@ export default function Register({ cad }: Props) {
                 </h1>
 
                 {ALLOW_REGULAR_LOGIN ? (
-                  <Link href="/auth/login">
-                    <a
-                      href="/auth/login"
-                      className="inline-block mt-2 underline text-neutral-700 dark:text-gray-200"
-                    >
-                      {t("hasAccount")}
-                    </a>
+                  <Link
+                    href="/auth/login"
+                    className="inline-block mt-2 underline text-neutral-700 dark:text-gray-200"
+                  >
+                    {t("hasAccount")}
                   </Link>
                 ) : null}
               </header>
 
-              <FormField errorMessage={errors.username} label={t("username")}>
-                <Input type="text" name="username" onChange={handleChange} />
-              </FormField>
+              <TextField
+                errorMessage={errors.username}
+                label={t("username")}
+                name="username"
+                onChange={(value) => setFieldValue("username", value)}
+              />
 
-              <FormField errorMessage={errors.password} label={t("password")}>
-                <PasswordInput name="password" onChange={handleChange} />
-              </FormField>
+              <TextField
+                type="password"
+                errorMessage={errors.password}
+                label={t("password")}
+                name="password"
+                onChange={(value) => setFieldValue("password", value)}
+              />
 
-              <FormField errorMessage={errors.confirmPassword} label={t("confirmPassword")}>
-                <PasswordInput name="confirmPassword" onChange={handleChange} />
-              </FormField>
+              <TextField
+                type="password"
+                errorMessage={errors.confirmPassword}
+                label={t("confirmPassword")}
+                name="confirmPassword"
+                onChange={(value) => setFieldValue("confirmPassword", value)}
+              />
 
               {cad.registrationCode ? (
-                <FormField errorMessage={errors.registrationCode} label={t("registrationCode")}>
-                  <Input name="registrationCode" onChange={handleChange} />
-                </FormField>
+                <TextField
+                  errorMessage={errors.registrationCode}
+                  label={t("registrationCode")}
+                  name="registrationCode"
+                  onChange={(value) => setFieldValue("registrationCode", value)}
+                />
               ) : null}
 
               {hasGoogleCaptchaSiteKey ? (
-                <p className="mt-5 text-sm text-neutral-700">
+                <p className="mt-5 text-sm text-neutral-700 dark:text-gray-400">
                   This site is protected by reCAPTCHA and the Google{" "}
                   <a className="underline" href="https://policies.google.com/privacy">
                     Privacy Policy
@@ -163,6 +172,18 @@ export default function Register({ cad }: Props) {
         <VersionDisplay cad={cad} />
       </main>
     </>
+  );
+}
+
+export default function RegisterPage(props: Props) {
+  return (
+    <GoogleReCaptchaProvider
+      reCaptchaKey={process.env.NEXT_PUBLIC_GOOGLE_CAPTCHA_SITE_KEY ?? ""}
+      scriptProps={{ async: true, defer: true, appendTo: "body" }}
+      useRecaptchaNet
+    >
+      <Register {...props} />
+    </GoogleReCaptchaProvider>
   );
 }
 

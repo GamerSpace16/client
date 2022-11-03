@@ -9,7 +9,7 @@ import { ActiveUnitsQualificationsCard } from "components/leo/qualifications/Act
 import { useActiveDeputies } from "hooks/realtime/useActiveDeputies";
 import { useActiveDispatchers } from "hooks/realtime/useActiveDispatchers";
 import type { EmsFdDeputy } from "@snailycad/types";
-import Image from "next/future/image";
+import Image from "next/image";
 
 interface Props {
   isDispatch: boolean;
@@ -29,7 +29,7 @@ export function DeputyColumn({ deputy, isDispatch, nameAndCallsign }: Props) {
     .filter((v) => v.type === "STATUS_CODE")
     .map((v) => ({
       name: v.value.value,
-      onClick: () => setStatus(deputy.id, v),
+      onPress: () => setStatus(deputy.id, v),
       "aria-label": `Set status to ${v.value.value}`,
       title: `Set status to ${v.value.value}`,
     }));

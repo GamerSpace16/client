@@ -6,14 +6,14 @@ import { useRouter } from "next/router";
 import { useAuth } from "context/AuthContext";
 import { classNames } from "lib/classNames";
 import { Dropdown } from "components/Dropdown";
-import { Button } from "components/Button";
-import { useLocalStorage } from "react-use";
+import { Button } from "@snailycad/ui";
 import { ModalIds } from "types/ModalIds";
 import { useModal } from "state/modalState";
 import dynamic from "next/dynamic";
-import { useMounted } from "@casper124578/useful";
 
-const ChangelogModal = dynamic(async () => (await import("../ChangelogModal")).ChangelogModal);
+const ChangelogModal = dynamic(async () => (await import("../ChangelogModal")).ChangelogModal, {
+  ssr: false,
+});
 
 export function AccountDropdown() {
   const [isOpen, setOpen] = React.useState(false);
@@ -22,11 +22,6 @@ export function AccountDropdown() {
   const router = useRouter();
   const t = useTranslations("Nav");
   const { openModal } = useModal();
-  const isMounted = useMounted();
-
-  const [seenChangelog, setSeenChangelog] = useLocalStorage(
-    `changelog-${cad?.version?.currentVersion}`,
-  );
 
   async function handleLogout() {
     const success = await logout();
@@ -34,11 +29,6 @@ export function AccountDropdown() {
       router.push("/auth/login");
       setUser(null);
     }
-  }
-
-  function handleChangelog() {
-    setSeenChangelog(true);
-    openModal(ModalIds.Changelog);
   }
 
   return (
@@ -59,18 +49,12 @@ export function AccountDropdown() {
             <span className="mr-2.5"> {user ? user.username : null}</span>
 
             <PersonCircle className="text-neutral-800 dark:text-gray-300" width={20} height={20} />
-            <span
-              className={classNames(
-                "absolute top-0.5 right-0.5 w-3 h-3 bg-green-500 rounded-full block",
-                cad?.version && !seenChangelog && isMounted ? "block" : "hidden",
-              )}
-            />
           </Button>
         }
       >
         <Dropdown.LinkItem href="/account">{t("account")}</Dropdown.LinkItem>
         <hr className="my-2 mx-2 border-t border-secondary dark:border-quinary" />
-        <Dropdown.Item onClick={handleLogout}>{t("logout")}</Dropdown.Item>
+        <Dropdown.Item onPress={handleLogout}>{t("logout")}</Dropdown.Item>
         <hr className="my-2 mx-2 border-t border-secondary dark:border-quinary" />
 
         {cad?.version ? (
@@ -84,10 +68,10 @@ export function AccountDropdown() {
 
             <hr className="my-2 mx-2 border-t border-secondary dark:border-quinary" />
 
-            <Dropdown.Item className="flex items-center gap-2" onClick={handleChangelog}>
-              {seenChangelog ? null : (
-                <span className="inline-block w-4 h-4 bg-green-500 rounded-full animate-pulse" />
-              )}{" "}
+            <Dropdown.Item
+              className="flex items-center gap-2"
+              onPress={() => openModal(ModalIds.Changelog)}
+            >
               {t("whatsNew")}
             </Dropdown.Item>
           </>

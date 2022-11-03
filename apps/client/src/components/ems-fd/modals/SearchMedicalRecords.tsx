@@ -1,9 +1,8 @@
 import * as React from "react";
 import { useTranslations } from "use-intl";
 import { Form, Formik } from "formik";
-import { Button } from "components/Button";
+import { Loader, Button } from "@snailycad/ui";
 import { FormField } from "components/form/FormField";
-import { Loader } from "components/Loader";
 import { Modal } from "components/modal/Modal";
 import useFetch from "lib/useFetch";
 import { useModal } from "state/modalState";
@@ -23,7 +22,8 @@ import type {
   PostEmsFdMedicalRecordsSearchData,
 } from "@snailycad/types/api";
 import { classNames } from "lib/classNames";
-import Image from "next/future/image";
+import Image from "next/image";
+import format from "date-fns/format";
 
 interface Props {
   onClose?(): void;
@@ -99,7 +99,7 @@ export function SearchMedicalRecordModal({ onClose }: Props) {
           <Form>
             <FormField errorMessage={errors.name} label={t("MedicalRecords.citizen")}>
               <InputSuggestions<SearchResult>
-                onSuggestionClick={(suggestion) => {
+                onSuggestionPress={(suggestion) => {
                   setFieldValue("name", `${suggestion.name} ${suggestion.surname}`);
                   handleFoundName(suggestion);
                 }}
@@ -142,110 +142,118 @@ export function SearchMedicalRecordModal({ onClose }: Props) {
             ) : results.isConfidential ? (
               <p className="my-5 px-2">{t("Leo.citizenIsConfidential")}</p>
             ) : (
-              <div className="flex w-full">
-                <div className="mr-2 min-w-[100px]">
-                  {results.imageId ? (
-                    <button
-                      type="button"
-                      onClick={() => openModal(ModalIds.CitizenImage)}
-                      className="cursor-pointer"
-                    >
-                      <Image
-                        className="rounded-md w-[100px] h-[100px] object-cover"
-                        draggable={false}
-                        src={makeImageUrl("citizens", results.imageId)!}
-                        loading="lazy"
-                        width={100}
-                        height={100}
-                        alt={`${results.name} ${results.surname}`}
-                      />
-                    </button>
-                  ) : (
-                    <PersonFill className="text-gray-500/60 w-[100px] h-[100px]" />
-                  )}
-                </div>
-                <div className="w-full overflow-y-auto">
-                  <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-y-1 md:gap-y-0 md:gap-5">
-                    <div>
-                      <Infofield label={t("Citizen.fullName")}>
-                        {results.name} {results.surname}
-                      </Infofield>
-                      {SOCIAL_SECURITY_NUMBERS && results.socialSecurityNumber ? (
-                        <Infofield label={t("Citizen.socialSecurityNumber")}>
-                          {results.socialSecurityNumber}
-                        </Infofield>
-                      ) : null}
-                      <Infofield label={t("Citizen.dateOfBirth")}>
-                        <FullDate isDateOfBirth onlyDate>
-                          {results.dateOfBirth}
-                        </FullDate>{" "}
-                        ({t("Citizen.age")}: {calculateAge(results.dateOfBirth)})
-                      </Infofield>
-                      <Infofield label={t("Citizen.gender")}>{results.gender.value}</Infofield>
-                      <Infofield label={t("Citizen.ethnicity")}>
-                        {results.ethnicity.value}
-                      </Infofield>
-                      <Infofield label={t("Citizen.hairColor")}>{results.hairColor}</Infofield>
-                      <Infofield label={t("Citizen.eyeColor")}>{results.eyeColor}</Infofield>
-                    </div>
-                    <div>
-                      <Infofield label={t("Citizen.weight")}>
-                        {results.weight} {cad?.miscCadSettings?.weightPrefix}
-                      </Infofield>
-                      <Infofield label={t("Citizen.height")}>
-                        {results.height} {cad?.miscCadSettings?.heightPrefix}
-                      </Infofield>
-                      <Infofield label={t("Citizen.address")}>
-                        {formatCitizenAddress(results)}
-                      </Infofield>
-                      <Infofield label={t("Citizen.phoneNumber")}>
-                        {results.phoneNumber || t("Common.none")}
-                      </Infofield>
-                      <Infofield className="max-w-[400px]" label={t("Citizen.occupation")}>
-                        {results.occupation || t("Common.none")}
-                      </Infofield>
-                      <Infofield className="max-w-[400px]" label={t("Citizen.additionalInfo")}>
-                        {results.additionalInfo || t("Common.none")}
-                      </Infofield>
-                    </div>
+              <>
+                {results.dead && results.dateOfDead ? (
+                  <div className="p-2 my-2 font-semibold text-black rounded-md bg-amber-500">
+                    {t("Leo.citizenDead", {
+                      date: format(new Date(results.dateOfDead), "MMMM do yyyy"),
+                    })}
                   </div>
+                ) : null}
 
-                  <div className="mt-7">
-                    {results.medicalRecords.length <= 0 ? (
-                      <p>No medical records</p>
+                <div className="flex w-full">
+                  <div className="mr-2 min-w-[100px]">
+                    {results.imageId ? (
+                      <button
+                        type="button"
+                        onClick={() => openModal(ModalIds.CitizenImage)}
+                        className="cursor-pointer"
+                      >
+                        <Image
+                          className="rounded-md w-[100px] h-[100px] object-cover"
+                          draggable={false}
+                          src={makeImageUrl("citizens", results.imageId)!}
+                          loading="lazy"
+                          width={100}
+                          height={100}
+                          alt={`${results.name} ${results.surname}`}
+                        />
+                      </button>
                     ) : (
-                      <Table
-                        tableState={tableState}
-                        data={results.medicalRecords.map((record) => ({
-                          id: record.id,
-                          type: record.type,
-                          bloodGroup: record.bloodGroup?.value ?? t("Common.none"),
-                          description: record.description || t("Common.none"),
-                          actions: (
-                            <Button
-                              size="xs"
-                              variant={results.dead ? "success" : "danger"}
-                              type="button"
-                              onClick={handleDeclare}
-                              disabled={state === "loading"}
-                            >
-                              {results.dead ? t("Ems.declareAlive") : t("Ems.declareDead")}
-                            </Button>
-                          ),
-                        }))}
-                        columns={[
-                          { header: t("MedicalRecords.diseases"), accessorKey: "type" },
-                          { header: t("MedicalRecords.bloodGroup"), accessorKey: "bloodGroup" },
-                          { header: t("Common.description"), accessorKey: "description" },
-                          { header: t("Common.actions"), accessorKey: "actions" },
-                        ]}
-                      />
+                      <PersonFill className="text-gray-500/60 w-[100px] h-[100px]" />
                     )}
                   </div>
+                  <div className="w-full overflow-y-auto">
+                    <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-y-1 md:gap-y-0 md:gap-5">
+                      <div>
+                        <Infofield label={t("Citizen.fullName")}>
+                          {results.name} {results.surname}
+                        </Infofield>
+                        {SOCIAL_SECURITY_NUMBERS && results.socialSecurityNumber ? (
+                          <Infofield label={t("Citizen.socialSecurityNumber")}>
+                            {results.socialSecurityNumber}
+                          </Infofield>
+                        ) : null}
+                        <Infofield label={t("Citizen.dateOfBirth")}>
+                          <FullDate isDateOfBirth onlyDate>
+                            {results.dateOfBirth}
+                          </FullDate>{" "}
+                          ({t("Citizen.age")}: {calculateAge(results.dateOfBirth)})
+                        </Infofield>
+                        <Infofield label={t("Citizen.gender")}>{results.gender.value}</Infofield>
+                        <Infofield label={t("Citizen.ethnicity")}>
+                          {results.ethnicity.value}
+                        </Infofield>
+                        <Infofield label={t("Citizen.hairColor")}>{results.hairColor}</Infofield>
+                        <Infofield label={t("Citizen.eyeColor")}>{results.eyeColor}</Infofield>
+                      </div>
+                      <div>
+                        <Infofield label={t("Citizen.weight")}>
+                          {results.weight} {cad?.miscCadSettings?.weightPrefix}
+                        </Infofield>
+                        <Infofield label={t("Citizen.height")}>
+                          {results.height} {cad?.miscCadSettings?.heightPrefix}
+                        </Infofield>
+                        <Infofield label={t("Citizen.address")}>
+                          {formatCitizenAddress(results)}
+                        </Infofield>
+                        <Infofield label={t("Citizen.phoneNumber")}>
+                          {results.phoneNumber || t("Common.none")}
+                        </Infofield>
+                        <Infofield className="max-w-[400px]" label={t("Citizen.occupation")}>
+                          {results.occupation || t("Common.none")}
+                        </Infofield>
+                        <Infofield className="max-w-[400px]" label={t("Citizen.additionalInfo")}>
+                          {results.additionalInfo || t("Common.none")}
+                        </Infofield>
+                      </div>
+                    </div>
+                    <div className="mt-7">
+                      {results.medicalRecords.length <= 0 ? (
+                        <p>No medical records</p>
+                      ) : (
+                        <Table
+                          tableState={tableState}
+                          data={results.medicalRecords.map((record) => ({
+                            id: record.id,
+                            type: record.type,
+                            bloodGroup: record.bloodGroup?.value ?? t("Common.none"),
+                            description: record.description || t("Common.none"),
+                            actions: (
+                              <Button
+                                size="xs"
+                                variant={results.dead ? "success" : "danger"}
+                                type="button"
+                                onPress={handleDeclare}
+                                disabled={state === "loading"}
+                              >
+                                {results.dead ? t("Ems.declareAlive") : t("Ems.declareDead")}
+                              </Button>
+                            ),
+                          }))}
+                          columns={[
+                            { header: t("MedicalRecords.diseases"), accessorKey: "type" },
+                            { header: t("MedicalRecords.bloodGroup"), accessorKey: "bloodGroup" },
+                            { header: t("Common.description"), accessorKey: "description" },
+                            { header: t("Common.actions"), accessorKey: "actions" },
+                          ]}
+                        />
+                      )}
+                    </div>
+                  </div>
+                  <CitizenImageModal citizen={results} />
                 </div>
-
-                <CitizenImageModal citizen={results} />
-              </div>
+              </>
             )}
 
             <footer
@@ -258,7 +266,7 @@ export function SearchMedicalRecordModal({ onClose }: Props) {
                 <Button
                   size="xs"
                   type="button"
-                  onClick={handleDeclare}
+                  onPress={handleDeclare}
                   disabled={state === "loading"}
                   variant="cancel"
                   className="px-1.5"
@@ -270,7 +278,7 @@ export function SearchMedicalRecordModal({ onClose }: Props) {
               <div className="flex gap-2">
                 <Button
                   type="reset"
-                  onClick={() => closeModal(ModalIds.SearchMedicalRecord)}
+                  onPress={() => closeModal(ModalIds.SearchMedicalRecord)}
                   variant="cancel"
                 >
                   {t("Common.cancel")}

@@ -1,11 +1,7 @@
 import { TOW_SCHEMA } from "@snailycad/schemas";
-import { Button } from "components/Button";
+import { Loader, Input, Button, TextField } from "@snailycad/ui";
 import { FormField } from "components/form/FormField";
-import { FormRow } from "components/form/FormRow";
-import { Input } from "components/form/inputs/Input";
 import { Select } from "components/form/Select";
-import { Textarea } from "components/form/Textarea";
-import { Loader } from "components/Loader";
 import { Modal } from "components/modal/Modal";
 import { useModal } from "state/modalState";
 import { useValues } from "context/ValuesContext";
@@ -23,6 +19,7 @@ import { InputSuggestions } from "components/form/inputs/InputSuggestions";
 import type { VehicleSearchResult } from "state/search/vehicleSearchState";
 import { Checkbox } from "components/form/inputs/Checkbox";
 import type { PostTowCallsData } from "@snailycad/types/api";
+import { AddressPostalSelect } from "components/form/select/PostalSelect";
 
 interface Props {
   call: Full911Call | null;
@@ -102,15 +99,7 @@ export function DispatchCallTowModal({ call }: Props) {
               </FormField>
             ) : null}
 
-            <FormRow>
-              <FormField errorMessage={errors.location} label={t("Calls.location")}>
-                <Input name="location" value={values.location} onChange={handleChange} />
-              </FormField>
-
-              <FormField errorMessage={errors.postal} label={t("Calls.postal")}>
-                <Input name="postal" value={values.postal} onChange={handleChange} />
-              </FormField>
-            </FormRow>
+            <AddressPostalSelect addressLabel="location" />
 
             {isLeo || isDispatch ? (
               <>
@@ -133,7 +122,7 @@ export function DispatchCallTowModal({ call }: Props) {
 
                 <FormField optional errorMessage={errors.plate} label={t("Vehicles.plate")}>
                   <InputSuggestions<VehicleSearchResult>
-                    onSuggestionClick={(suggestion) => {
+                    onSuggestionPress={(suggestion) => {
                       setFieldValue("plate", suggestion.plate);
                       setFieldValue("model", suggestion.model.value.value);
                     }}
@@ -179,9 +168,14 @@ export function DispatchCallTowModal({ call }: Props) {
               />
             </FormField>
 
-            <FormField errorMessage={errors.description} label={common("description")}>
-              <Textarea name="description" onChange={handleChange} value={values.description} />
-            </FormField>
+            <TextField
+              isTextarea
+              errorMessage={errors.description}
+              label={common("description")}
+              name="description"
+              onChange={(value) => setFieldValue("description", value)}
+              value={values.description}
+            />
 
             <ImpoundLocationInfo />
 
@@ -189,7 +183,7 @@ export function DispatchCallTowModal({ call }: Props) {
               <div className="flex items-center">
                 <Button
                   type="reset"
-                  onClick={() => closeModal(ModalIds.ManageTowCall)}
+                  onPress={() => closeModal(ModalIds.ManageTowCall)}
                   variant="cancel"
                 >
                   {common("cancel")}

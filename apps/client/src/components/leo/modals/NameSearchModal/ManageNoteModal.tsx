@@ -1,14 +1,11 @@
 import type { Note } from "@snailycad/types";
-import { Button } from "components/Button";
-import { FormField } from "components/form/FormField";
+import { Loader, Button, TextField } from "@snailycad/ui";
 import { Modal } from "components/modal/Modal";
 import { useModal } from "state/modalState";
 import { Form, Formik } from "formik";
 import useFetch from "lib/useFetch";
 import { useTranslations } from "next-intl";
 import { ModalIds } from "types/ModalIds";
-import { Textarea } from "components/form/Textarea";
-import { Loader } from "components/Loader";
 import type { VehicleSearchResult } from "state/search/vehicleSearchState";
 import type { NameSearchResult } from "state/search/nameSearchState";
 import type { PutNotesData, PostNotesData } from "@snailycad/types/api";
@@ -78,17 +75,22 @@ export function ManageNoteModal({ onCreate, onUpdate, onClose, currentResult, ty
       className="w-[600px]"
     >
       <Formik onSubmit={onSubmit} initialValues={INITIAL_VALUES}>
-        {({ handleChange, values, errors, isValid }) => (
+        {({ setFieldValue, values, errors, isValid }) => (
           <Form autoComplete="off">
-            <FormField errorMessage={errors.text as string} label={t("text")}>
-              <Textarea name="text" onChange={handleChange} value={values.text} />
-            </FormField>
+            <TextField
+              isTextarea
+              errorMessage={errors.text as string}
+              label={t("text")}
+              name="text"
+              onChange={(value) => setFieldValue("text", value)}
+              value={values.text}
+            />
 
             <footer className="flex justify-end mt-5">
               <Button
                 disabled={state === "loading"}
                 type="reset"
-                onClick={handleClose}
+                onPress={handleClose}
                 variant="cancel"
               >
                 {common("cancel")}

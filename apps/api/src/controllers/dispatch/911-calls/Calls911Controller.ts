@@ -39,6 +39,7 @@ import {
   incidentInclude,
 } from "controllers/leo/incidents/IncidentController";
 import type { z } from "zod";
+import { getNextActiveCallId } from "lib/calls/getNextActiveCall";
 
 export const callInclude = {
   position: true,
@@ -65,7 +66,7 @@ export class Calls911Controller {
   @Description("Get all 911 calls")
   async get911Calls(
     @Context("cad") cad: { miscCadSettings: MiscCadSettings | null },
-    @QueryParams("includeEnded", Boolean) includeEnded: boolean,
+    @QueryParams("includeEnded", Boolean) includeEnded?: boolean,
     @QueryParams("skip", Number) skip = 0,
     @QueryParams("query", String) query = "",
     @QueryParams("includeAll", Boolean) includeAll = false,
@@ -115,6 +116,11 @@ export class Calls911Controller {
       // @ts-expect-error this can be ignored.
       where.OR = [...Array.from(where.OR), { assignedUnits: { some: { id: assignedUnit } } }];
     }
+
+    // todo
+    // isFromServer
+    // if the request is from the server, we want to only return information that is required to render the UI.
+    // once the UI is rendered, we can then fetch the rest of the data.
 
     const [totalCount, calls] = await Promise.all([
       prisma.call911.count({ where }),
@@ -212,7 +218,7 @@ export class Calls911Controller {
 
     try {
       const data = this.createWebhookData(normalizedCall);
-      await sendDiscordWebhook(DiscordWebhookType.CALL_911, data);
+      await sendDiscordWebhook({ type: DiscordWebhookType.CALL_911, data });
     } catch (error) {
       console.error("Could not send Discord webhook.", error);
     }
@@ -375,12 +381,18 @@ export class Calls911Controller {
 
     const unitPromises = call.assignedUnits.map(async (unit) => {
       const { prismaName, unitId } = getPrismaNameActiveCallIncident({ unit });
-      if (!prismaName) return;
+      if (!prismaName || !unitId) return;
 
       // @ts-expect-error method has the same properties
       return prisma[prismaName].update({
         where: { id: unitId },
-        data: { activeCallId: null },
+        data: {
+          activeCallId: await getNextActiveCallId({
+            callId: call.id,
+            type: "unassign",
+            unit: { ...unit, id: unitId },
+          }),
+        },
       });
     });
 
@@ -521,7 +533,14 @@ export class Calls911Controller {
     // @ts-expect-error they have the same properties for updating
     await prisma[prismaNames[type]].update({
       where: { id: unit.id },
-      data: { activeCallId: callType === "assign" ? callId : null, statusId: assignedToStatus?.id },
+      data: {
+        activeCallId: await getNextActiveCallId({
+          callId: call.id,
+          type: callType,
+          unit,
+        }),
+        statusId: assignedToStatus?.id,
+      },
     });
 
     await Promise.all([

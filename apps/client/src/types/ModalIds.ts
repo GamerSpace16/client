@@ -69,16 +69,18 @@ export const enum ModalIds {
   ManageIncident = "ManageIncidentModal",
   LinkCallToIncident = "LinkCallToIncidentModal",
   ManageSeizedItems = "ManageSeizedItemsModal",
-  ManageDLExam = "ManageDLExamModal",
+  ManageExam = "ManageExamModal",
   ManageCitizenCustomFields = "ManageCitizenCustomFieldsModal",
   CustomFieldSearch = "CustomFieldSearchModal",
   AddAssignedUnit = "AddAssignedUnitModal",
+  ImpoundVehicle = "ImpoundVehicleModal",
 
   SearchMedicalRecord = "SearchMedicalRecordModal",
   CreateMedicalRecord = "CreateMedicalRecordModal",
   SelectDeputy = "SelectDeputyModal",
   ManageDeputy = "ManageDeputyModal",
   ManageAOP = "ManageAOPModal",
+  EnableSignal100 = "EnableSignal100",
 
   ManageTruckLog = "ManageTruckLogModal",
 
@@ -118,7 +120,7 @@ export const enum ModalIds {
   AlertDeleteSelectedValues = "AlertDeleteSelectedValuesModal",
   AlertDeclineOfficer = "AlertDeclineOfficerModal",
   AlertUseOldPermissions = "AlertUseOldPermissionsModal",
-  AlertDeleteDLExam = "AlertDeleteDLExamModal",
+  AlertDeleteExam = "AlertDeleteExamModal",
   AlertDeleteCustomField = "AlertDeleteCustomFieldModal",
   AlertRevokePersonalApiToken = "AlertRevokePersonalApiTokenModal",
   AlertDeleteUnitQualification = "AlertDeleteUnitQualificationModal",

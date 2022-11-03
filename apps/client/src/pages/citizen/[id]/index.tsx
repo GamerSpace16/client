@@ -7,7 +7,7 @@ import type { GetServerSideProps } from "next";
 import { getSessionUser } from "lib/auth";
 import { Layout } from "components/Layout";
 import { useModal } from "state/modalState";
-import { Button, buttonVariants } from "components/Button";
+import { BreadcrumbItem, Breadcrumbs, Button, buttonVariants } from "@snailycad/ui";
 import useFetch from "lib/useFetch";
 import { getTranslations } from "lib/getTranslation";
 import { VehiclesCard } from "components/citizen/vehicles/VehiclesCard";
@@ -26,7 +26,7 @@ import { FullDate } from "components/shared/FullDate";
 import { RecordsTab } from "components/leo/modals/NameSearchModal/tabs/RecordsTab";
 import { classNames } from "lib/classNames";
 import type { DeleteCitizenByIdData } from "@snailycad/types/api";
-import Image from "next/future/image";
+import Image from "next/image";
 
 const AlertModal = dynamic(async () => (await import("components/modal/AlertModal")).AlertModal);
 const CitizenImageModal = dynamic(
@@ -79,6 +79,13 @@ export default function CitizenId() {
 
   return (
     <Layout className="dark:text-white">
+      <Breadcrumbs>
+        <BreadcrumbItem href="/citizen">{t("citizen")}</BreadcrumbItem>
+        <BreadcrumbItem>
+          {citizen.name} {citizen.surname}
+        </BreadcrumbItem>
+      </Breadcrumbs>
+
       <Title renderLayoutTitle={false}>
         {citizen.name} {citizen.surname}
       </Title>
@@ -152,16 +159,14 @@ export default function CitizenId() {
         </div>
 
         <div className="flex gap-2">
-          <Link href={`/citizen/${citizen.id}/edit`}>
-            <a
-              className={classNames(buttonVariants.default, "p-1 px-4 rounded-md")}
-              href={`/citizen/${citizen.id}/edit`}
-            >
-              {t("editCitizen")}
-            </a>
+          <Link
+            className={classNames(buttonVariants.default, "p-1 px-4 rounded-md")}
+            href={`/citizen/${citizen.id}/edit`}
+          >
+            {t("editCitizen")}
           </Link>
           {ALLOW_CITIZEN_DELETION_BY_NON_ADMIN ? (
-            <Button onClick={() => openModal(ModalIds.AlertDeleteCitizen)} variant="danger">
+            <Button onPress={() => openModal(ModalIds.AlertDeleteCitizen)} variant="danger">
               {t("deleteCitizen")}
             </Button>
           ) : null}
@@ -188,9 +193,6 @@ export default function CitizenId() {
           title={t("deleteCitizen")}
           description={t.rich("alert_deleteCitizen", {
             citizen: `${citizen.name} ${citizen.surname}`,
-            span: (children) => {
-              return <span className="font-semibold">{children}</span>;
-            },
           })}
           id={ModalIds.AlertDeleteCitizen}
           state={state}

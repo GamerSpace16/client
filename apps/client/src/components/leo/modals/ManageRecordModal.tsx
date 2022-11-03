@@ -1,10 +1,7 @@
-import * as React from "react";
 import { CREATE_TICKET_SCHEMA } from "@snailycad/schemas";
-import { Button } from "components/Button";
+import { Loader, Button, TextField } from "@snailycad/ui";
 import { FormField } from "components/form/FormField";
-import { Input } from "components/form/inputs/Input";
 import type { SelectValue } from "components/form/Select";
-import { Loader } from "components/Loader";
 import { Modal } from "components/modal/Modal";
 import { useModal } from "state/modalState";
 import { useValues } from "context/ValuesContext";
@@ -13,7 +10,6 @@ import { handleValidate } from "lib/handleValidate";
 import useFetch from "lib/useFetch";
 import { ModalIds } from "types/ModalIds";
 import { useTranslations } from "use-intl";
-import { Textarea } from "components/form/Textarea";
 import {
   type Citizen,
   RecordType,
@@ -30,8 +26,9 @@ import { SeizedItemsTable } from "./ManageRecord/seized-items/SeizedItemsTable";
 import { toastMessage } from "lib/toastMessage";
 import { useFeatureEnabled } from "hooks/useFeatureEnabled";
 import type { PostRecordsData, PutRecordsByIdData } from "@snailycad/types/api";
-import Image from "next/future/image";
+import Image from "next/image";
 import { Toggle } from "components/form/Toggle";
+import { AddressPostalSelect } from "components/form/select/PostalSelect";
 
 interface Props {
   record?: Record | null;
@@ -102,6 +99,7 @@ export function ManageRecordModal({
         bail: LEO_BAIL && value.jailTime?.enabled ? value.bail?.value : null,
         jailTime: value.jailTime?.enabled ? value.jailTime?.value : null,
         fine: value.fine?.enabled ? value.fine?.value : null,
+        counts: value.counts?.value ?? null,
       })),
     };
 
@@ -154,6 +152,7 @@ export function ManageRecordModal({
           key: v.penalCodeId,
           ...v.penalCode,
           fine: { enabled: !!v.fine, value: v.fine },
+          counts: { enabled: true, value: v.counts },
           jailTime: { enabled: !!v.jailTime, value: v.jailTime },
           bail: { enabled: LEO_BAIL ? !!v.jailTime : false, value: v.bail },
         },
@@ -183,7 +182,7 @@ export function ManageRecordModal({
                   disabled: isReadOnly || !!record,
                   errorMessage: errors.citizenName,
                 }}
-                onSuggestionClick={(suggestion) => {
+                onSuggestionPress={(suggestion) => {
                   const newValues = {
                     ...values,
                     citizenId: suggestion.id,
@@ -222,14 +221,7 @@ export function ManageRecordModal({
               />
             </FormField>
 
-            <FormField errorMessage={errors.postal} label={t("postal")}>
-              <Input
-                disabled={isReadOnly}
-                value={values.postal}
-                name="postal"
-                onChange={handleChange}
-              />
-            </FormField>
+            <AddressPostalSelect postalOnly />
 
             <FormField label={t("violations")}>
               <SelectPenalCode
@@ -246,14 +238,16 @@ export function ManageRecordModal({
             />
             <SeizedItemsTable isReadOnly={isReadOnly} />
 
-            <FormField optional errorMessage={errors.notes} label={t("notes")}>
-              <Textarea
-                disabled={isReadOnly}
-                value={values.notes}
-                name="notes"
-                onChange={handleChange}
-              />
-            </FormField>
+            <TextField
+              isTextarea
+              isOptional
+              isDisabled={isReadOnly}
+              errorMessage={errors.notes}
+              label={t("notes")}
+              value={values.notes}
+              name="notes"
+              onChange={(value) => setFieldValue("notes", value)}
+            />
 
             <FormField optional errorMessage={errors.paymentStatus} label={t("recordPaid")}>
               <Toggle
@@ -270,7 +264,7 @@ export function ManageRecordModal({
             </FormField>
 
             <footer className="flex justify-end mt-5">
-              <Button type="reset" onClick={() => closeModal(data[type].id)} variant="cancel">
+              <Button type="reset" onPress={() => closeModal(data[type].id)} variant="cancel">
                 {common("cancel")}
               </Button>
               <Button

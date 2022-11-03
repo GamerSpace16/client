@@ -21,7 +21,7 @@ import { useActiveDispatchers } from "hooks/realtime/useActiveDispatchers";
 import { classNames } from "lib/classNames";
 import { ActiveUnitsQualificationsCard } from "components/leo/qualifications/ActiveUnitsQualificationsCard";
 import type { PostDispatchStatusUnmergeUnitById } from "@snailycad/types/api";
-import Image from "next/future/image";
+import Image from "next/image";
 
 interface Props {
   officer: Officer | CombinedLeoUnit;
@@ -52,7 +52,7 @@ export function OfficerColumn({ officer, nameAndCallsign, setTempUnit }: Props) 
     .filter((v) => v.type === "STATUS_CODE")
     .map((v) => ({
       name: v.value.value,
-      onClick: () => setStatus(officer.id, v),
+      onPress: () => setStatus(officer.id, v),
       "aria-label": `Set status to ${v.value.value}`,
       title: `Set status to ${v.value.value}`,
     }));

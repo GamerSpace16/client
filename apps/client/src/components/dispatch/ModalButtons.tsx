@@ -1,5 +1,5 @@
 import { useTranslations } from "use-intl";
-import { Button } from "components/Button";
+import { Button } from "@snailycad/ui";
 import useFetch from "lib/useFetch";
 import { useSignal100 } from "hooks/shared/useSignal100";
 import { useFeatureEnabled } from "hooks/useFeatureEnabled";
@@ -14,6 +14,12 @@ import type {
   PostDispatchDispatchersStateData,
   PostDispatchSignal100Data,
 } from "@snailycad/types/api";
+
+import dynamic from "next/dynamic";
+import { useCall911State } from "state/dispatch/call911State";
+const EnableSignal100Modal = dynamic(
+  async () => (await import("./modals/EnableSignal100Modal")).EnableSignal100Modal,
+);
 
 const buttons: modalButtons.ModalButton[] = [
   modalButtons.nameSearchBtn,
@@ -35,6 +41,7 @@ export function DispatchModalButtons() {
   const { user } = useAuth();
   const { ACTIVE_DISPATCHERS, TONES } = useFeatureEnabled();
   const { openModal } = useModal();
+  const { calls, setCalls } = useCall911State();
 
   const isActive = ACTIVE_DISPATCHERS ? activeDispatchers.some((v) => v.userId === user?.id) : true;
 
@@ -55,11 +62,17 @@ export function DispatchModalButtons() {
   }
 
   async function handleSignal100() {
-    await execute<PostDispatchSignal100Data>({
-      path: "/dispatch/signal-100",
-      method: "POST",
-      data: { value: !signal100Enabled },
-    });
+    if (signal100Enabled) {
+      await execute<PostDispatchSignal100Data>({
+        path: "/dispatch/signal-100",
+        method: "POST",
+        data: { value: !signal100Enabled },
+      });
+
+      setCalls(calls.map((call) => ({ ...call, isSignal100: false })));
+    } else {
+      openModal(ModalIds.EnableSignal100);
+    }
   }
 
   return (
@@ -68,23 +81,24 @@ export function DispatchModalButtons() {
         <ModalButton disabled={!isActive} key={idx} button={button} />
       ))}
 
-      <Button disabled={!isActive} onClick={handleSignal100} id="signal100">
+      <Button disabled={!isActive} onPress={handleSignal100} id="signal100">
         {signal100Enabled ? t("Leo.disableSignal100") : t("Leo.enableSignal100")}
       </Button>
 
       {TONES ? (
-        <Button disabled={!isActive} onClick={() => openModal(ModalIds.Tones)}>
+        <Button disabled={!isActive} onPress={() => openModal(ModalIds.Tones)}>
           {t("Leo.tones")}
         </Button>
       ) : null}
 
       {features.ACTIVE_DISPATCHERS ? (
-        <Button onClick={handleStateChangeDispatcher}>
+        <Button onPress={handleStateChangeDispatcher}>
           {isActive ? t("Leo.goOffDuty") : t("Leo.goOnDuty")}
         </Button>
       ) : null}
 
       {TONES ? <TonesModal types={["leo", "ems-fd"]} /> : null}
+      {signal100Enabled ? null : <EnableSignal100Modal />}
     </div>
   );
 }

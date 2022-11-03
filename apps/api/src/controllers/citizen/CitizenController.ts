@@ -20,10 +20,13 @@ import { shouldCheckCitizenUserId } from "lib/citizen/hasCitizenAccess";
 import { citizenObjectFromData } from "lib/citizen";
 import type * as APITypes from "@snailycad/types/api";
 import { getImageWebPPath } from "utils/image";
+import { validateSocialSecurityNumber } from "lib/citizen/validateSSN";
+import { setEndedSuspendedLicenses } from "lib/citizen/setEndedSuspendedLicenses";
 
 export const citizenInclude = {
   user: { select: userProperties },
   flags: true,
+  suspendedLicenses: true,
   vehicles: {
     orderBy: { createdAt: "desc" },
     include: {
@@ -137,7 +140,12 @@ export class CitizenController {
       throw new NotFound("notFound");
     }
 
-    return citizen;
+    const [_citizen] = await setEndedSuspendedLicenses([citizen]);
+    if (!_citizen) {
+      throw new NotFound("notFound");
+    }
+
+    return _citizen;
   }
 
   @Delete("/:id")
@@ -230,11 +238,22 @@ export class CitizenController {
     });
     const defaultLicenseValueId = defaultLicenseValue?.id ?? null;
 
+    if (data.socialSecurityNumber) {
+      await validateSocialSecurityNumber({
+        socialSecurityNumber: data.socialSecurityNumber,
+      });
+    }
+
     const citizen = await prisma.citizen.create({
       data: {
         userId: user.id || undefined,
-        ...citizenObjectFromData(data, defaultLicenseValueId),
+        ...citizenObjectFromData({
+          data,
+          defaultLicenseValueId,
+          cad,
+        }),
       },
+      include: { suspendedLicenses: true },
     });
 
     await updateCitizenLicenseCategories(citizen, data);
@@ -245,7 +264,7 @@ export class CitizenController {
   async updateCitizen(
     @PathParams("id") citizenId: string,
     @Context("user") user: User,
-    @Context("cad") cad: { features?: CadFeature[]; miscCadSettings: MiscCadSettings },
+    @Context("cad") cad: cad & { features?: CadFeature[]; miscCadSettings: MiscCadSettings | null },
     @BodyParams() body: unknown,
   ): Promise<APITypes.PutCitizenByIdData> {
     const data = validateSchema(CREATE_CITIZEN_SCHEMA, body);
@@ -270,12 +289,22 @@ export class CitizenController {
       throw new ExtendedBadRequest({ dateOfBirth: "dateLargerThanNow" });
     }
 
+    if (data.socialSecurityNumber) {
+      await validateSocialSecurityNumber({
+        socialSecurityNumber: data.socialSecurityNumber,
+        citizenId: citizen.id,
+      });
+    }
+
     const updated = await prisma.citizen.update({
       where: {
         id: citizen.id,
       },
       data: {
-        ...citizenObjectFromData(data),
+        ...citizenObjectFromData({
+          data,
+          cad,
+        }),
         socialSecurityNumber:
           data.socialSecurityNumber ??
           (!citizen.socialSecurityNumber ? generateString(9, { numbersOnly: true }) : undefined),

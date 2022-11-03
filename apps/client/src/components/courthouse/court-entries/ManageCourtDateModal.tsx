@@ -1,6 +1,5 @@
 import { COURT_DATE_SCHEMA } from "@snailycad/schemas";
-import { Button } from "components/Button";
-import { FormField } from "components/form/FormField";
+import { Button, DatePickerField, TextField } from "@snailycad/ui";
 import { Modal } from "components/modal/Modal";
 import { useModal } from "state/modalState";
 import { Form, Formik } from "formik";
@@ -8,9 +7,8 @@ import { handleValidate } from "lib/handleValidate";
 import { useTranslations } from "next-intl";
 import { ModalIds } from "types/ModalIds";
 import type { CourtDate } from "@snailycad/types";
-import { Textarea } from "components/form/Textarea";
 import { v4 } from "uuid";
-import { DatePickerField } from "components/form/inputs/DatePicker/DatePickerField";
+import parseISO from "date-fns/parseISO";
 
 interface Props {
   date: CourtDate | null;
@@ -27,7 +25,7 @@ export function ManageCourtDateModal({ onCreate, onUpdate, onClose, date }: Prop
   const validate = handleValidate(COURT_DATE_SCHEMA);
   const INITIAL_VALUES = {
     note: date?.note ?? "",
-    date: date?.date ?? new Date(),
+    date: typeof date?.date === "string" ? parseISO(date.date) : date?.date ?? new Date(),
   };
 
   function handleClose() {
@@ -53,20 +51,26 @@ export function ManageCourtDateModal({ onCreate, onUpdate, onClose, date }: Prop
       className="w-[600px]"
     >
       <Formik validate={validate} onSubmit={onSubmit} initialValues={INITIAL_VALUES}>
-        {({ values, errors, setFieldValue, handleChange }) => (
+        {({ values, errors, setFieldValue }) => (
           <Form>
             <DatePickerField
-              onChange={(value) => setFieldValue("date", value.toString())}
+              value={values.date}
+              onChange={(value) => setFieldValue("date", value?.toDate("UTC"))}
               label={t("date")}
               errorMessage={errors.date as string}
             />
 
-            <FormField label={t("note")} errorMessage={errors.note}>
-              <Textarea name="note" value={values.note} onChange={handleChange} />
-            </FormField>
+            <TextField
+              isTextarea
+              label={t("note")}
+              errorMessage={errors.note}
+              name="note"
+              value={values.note}
+              onChange={(value) => setFieldValue("note", value)}
+            />
 
             <footer className="flex justify-end mt-5">
-              <Button onClick={handleClose} variant="cancel" type="reset">
+              <Button onPress={handleClose} variant="cancel" type="reset">
                 {common("cancel")}
               </Button>
               <Button className="flex items-center" type="submit">

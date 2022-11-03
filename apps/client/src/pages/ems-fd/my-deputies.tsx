@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useTranslations } from "use-intl";
 import dynamic from "next/dynamic";
-import { Button } from "components/Button";
+import { Button } from "@snailycad/ui";
 import { Layout } from "components/Layout";
 import { useModal } from "state/modalState";
 import { getSessionUser } from "lib/auth";
@@ -20,7 +20,7 @@ import { OfficerRank } from "components/leo/OfficerRank";
 import { UnitDepartmentStatus } from "components/leo/UnitDepartmentStatus";
 import type { DeleteMyDeputyByIdData, GetMyDeputiesData } from "@snailycad/types/api";
 import { useTemporaryItem } from "hooks/shared/useTemporaryItem";
-import Image from "next/future/image";
+import Image from "next/image";
 
 const AlertModal = dynamic(async () => (await import("components/modal/AlertModal")).AlertModal);
 const ManageDeputyModal = dynamic(
@@ -76,7 +76,7 @@ export default function MyDeputies({ deputies: data }: Props) {
       <header className="flex items-center justify-between">
         <Title className="!mb-0">{t("Ems.myDeputies")}</Title>
 
-        <Button onClick={() => openModal(ModalIds.ManageDeputy)}>{t("Ems.createDeputy")}</Button>
+        <Button onPress={() => openModal(ModalIds.ManageDeputy)}>{t("Ems.createDeputy")}</Button>
       </header>
 
       {deputies.length <= 0 ? (
@@ -111,11 +111,11 @@ export default function MyDeputies({ deputies: data }: Props) {
             position: deputy.position ?? common("none"),
             actions: (
               <>
-                <Button size="xs" onClick={() => handleEditClick(deputy)} variant="success">
+                <Button size="xs" onPress={() => handleEditClick(deputy)} variant="success">
                   {common("edit")}
                 </Button>
                 <Button
-                  onClick={() => handleDeleteClick(deputy)}
+                  onPress={() => handleDeleteClick(deputy)}
                   className="ml-2"
                   variant="danger"
                   size="xs"
@@ -156,7 +156,6 @@ export default function MyDeputies({ deputies: data }: Props) {
       <AlertModal
         title={t("Ems.deleteDeputy")}
         description={t.rich("Ems.alert_deleteDeputy", {
-          span: (children) => <span className="font-semibold">{children}</span>,
           deputy: tempDeputy && makeUnitName(tempDeputy),
         })}
         id={ModalIds.AlertDeleteDeputy}

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useField } from "@react-aria/label";
 import { classNames } from "lib/classNames";
-import useOnclickOutside from "react-cool-onclickoutside";
+import useonPressOutside from "react-cool-onclickoutside";
 import { useTranslations } from "next-intl";
 
 interface Props {
@@ -13,6 +13,7 @@ interface Props {
 
   hideLabel?: boolean;
   boldLabel?: boolean;
+  labelClassName?: string;
 
   /** make a form field as optional */
   optional?: boolean;
@@ -27,9 +28,10 @@ export function FormField({
   errorMessage,
   optional,
   hideLabel,
+  labelClassName,
 }: Props) {
   const [menuOpen, setMenuOpen] = React.useState(false);
-  const ref = useOnclickOutside(() => setMenuOpen(false));
+  const ref = useonPressOutside(() => setMenuOpen(false));
   const { labelProps, fieldProps, errorMessageProps } = useField({ label, errorMessage });
   const common = useTranslations("Common");
   const optionalText = common("optionalField");
@@ -39,6 +41,7 @@ export function FormField({
     boldLabel && "font-semibold",
     checkbox && "ml-2 w-full",
     hideLabel && "hidden",
+    labelClassName,
   );
 
   const [child, ...rest] = Array.isArray(children) ? children : [children];

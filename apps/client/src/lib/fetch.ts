@@ -28,6 +28,14 @@ export async function handleRequest<T = any>(
   );
   const parsedCookie = req?.headers.cookie;
 
+  let contentType = "application/json";
+  const formData = data as unknown as FormData | undefined;
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (formData?.get?.("file") || formData?.get?.("image")) {
+    contentType = "multipart/form-data";
+  }
+
   try {
     const res = await axios({
       url: `${apiUrl}${path}`,
@@ -37,7 +45,7 @@ export async function handleRequest<T = any>(
       params: options?.params,
       headers: {
         Session: parsedCookie ?? "",
-        "Content-Type": "application/json",
+        "Content-Type": contentType,
         "is-from-dispatch": String(isDispatchUrl),
       },
     });

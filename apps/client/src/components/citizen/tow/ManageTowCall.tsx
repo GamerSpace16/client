@@ -1,9 +1,6 @@
 import { TOW_SCHEMA } from "@snailycad/schemas";
-import { Button } from "components/Button";
+import { Loader, Button } from "@snailycad/ui";
 import { FormField } from "components/form/FormField";
-import { FormRow } from "components/form/FormRow";
-import { Input } from "components/form/inputs/Input";
-import { Loader } from "components/Loader";
 import { AlertModal } from "components/modal/AlertModal";
 import { dataToSlate, Editor } from "components/editor/Editor";
 import { Modal } from "components/modal/Modal";
@@ -24,6 +21,7 @@ import type {
   DeleteTowCallsData,
   DeleteTaxiCallsData,
 } from "@snailycad/types/api";
+import { AddressPostalSelect } from "components/form/select/PostalSelect";
 
 interface Props {
   call: PutTaxiCallsData | PutTowCallsData | null;
@@ -123,7 +121,7 @@ export function ManageCallModal({ onDelete, onUpdate, onClose, isTow: tow, call 
       className="w-[700px]"
     >
       <Formik validate={validate} initialValues={INITIAL_VALUES} onSubmit={onSubmit}>
-        {({ handleChange, setFieldValue, values, isValid, errors }) => (
+        {({ setFieldValue, values, isValid, errors }) => (
           <Form>
             <FormField errorMessage={errors.creatorId} label={t("citizen")}>
               <CitizenSuggestionsField
@@ -133,15 +131,7 @@ export function ManageCallModal({ onDelete, onUpdate, onClose, isTow: tow, call 
               />
             </FormField>
 
-            <FormRow>
-              <FormField errorMessage={errors.location} label={t("location")}>
-                <Input name="location" value={values.location} onChange={handleChange} />
-              </FormField>
-
-              <FormField errorMessage={errors.postal} label={t("postal")}>
-                <Input name="postal" value={values.postal} onChange={handleChange} />
-              </FormField>
-            </FormRow>
+            <AddressPostalSelect addressLabel="location" />
 
             <FormField errorMessage={errors.description} label={common("description")}>
               <Editor
@@ -157,14 +147,14 @@ export function ManageCallModal({ onDelete, onUpdate, onClose, isTow: tow, call 
                   className="flex items-center mr-2"
                   disabled={state === "loading"}
                   type="button"
-                  onClick={() => openModal(ModalIds.AlertEndTowCall)}
+                  onPress={() => openModal(ModalIds.AlertEndTowCall)}
                 >
                   {state === "loading" ? <Loader className="mr-2" /> : null}
                   {t("endCall")}
                 </Button>
               ) : null}
               <div className="flex items-center">
-                <Button type="reset" onClick={handleClose} variant="cancel">
+                <Button type="reset" onPress={handleClose} variant="cancel">
                   {common("cancel")}
                 </Button>
                 <Button

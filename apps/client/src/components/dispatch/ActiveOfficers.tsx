@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useTranslations } from "use-intl";
-import { Button } from "components/Button";
+import { Button } from "@snailycad/ui";
 import type { ActiveOfficer } from "state/leoState";
 import { ManageUnitModal } from "./modals/ManageUnit";
 import { useModal } from "state/modalState";
@@ -80,7 +80,7 @@ function ActiveOfficers({ initialOfficers }: Props) {
               "px-1.5 dark:border dark:border-quinary dark:bg-tertiary dark:hover:brightness-125 group",
               showLeoFilters && "dark:!bg-secondary !bg-gray-500",
             )}
-            onClick={() => setShowFilters("leo", !showLeoFilters)}
+            onPress={() => setShowFilters("leo", !showLeoFilters)}
             title={common("filters")}
             disabled={activeOfficers.length <= 0}
           >
@@ -160,7 +160,7 @@ function ActiveOfficers({ initialOfficers }: Props) {
                   actions: isDispatch ? (
                     <Button
                       disabled={!hasActiveDispatchers}
-                      onClick={() => handleEditClick(officer)}
+                      onPress={() => handleEditClick(officer)}
                       size="xs"
                       variant="success"
                     >

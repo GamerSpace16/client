@@ -23,6 +23,7 @@ import {
   PENAL_CODE_ARR,
   QUALIFICATION_ARR,
   CALL_TYPE_ARR,
+  ADDRESS_SCHEMA_ARR,
 } from "@snailycad/schemas";
 import {
   type DepartmentType,
@@ -37,6 +38,7 @@ import {
   Value,
   CadFeature,
   cad,
+  PenalCodeType,
 } from "@prisma/client";
 import { validateSchema } from "lib/validateSchema";
 import { upsertWarningApplicable } from "lib/records/penal-code";
@@ -102,6 +104,24 @@ interface HandlerOptions {
 }
 
 export const typeHandlers = {
+  ADDRESS: async ({ body, id }: HandlerOptions) => {
+    const data = validateSchema(ADDRESS_SCHEMA_ARR, body);
+
+    return prisma.$transaction(
+      data.map((item) => {
+        return prisma.addressValue.upsert({
+          where: { id: String(id) },
+          ...makePrismaData(ValueType.ADDRESS, {
+            postal: item.postal,
+            county: item.county,
+            value: item.value,
+            isDisabled: item.isDisabled,
+          }),
+          include: { value: true },
+        });
+      }),
+    );
+  },
   VEHICLE: async ({ body, id }: HandlerOptions) => {
     const data = validateSchema(HASH_SCHEMA_ARR, body);
 
@@ -268,7 +288,9 @@ export const typeHandlers = {
           title: item.title,
           description: item.description,
           descriptionData: item.descriptionData ?? [],
+          type: (item.type ?? null) as PenalCodeType | null,
           groupId: item.groupId,
+          isPrimary: item.isPrimary ?? true,
           ...(await upsertWarningApplicable({
             body: item,
             cad,
@@ -280,6 +302,8 @@ export const typeHandlers = {
           description: item.description,
           descriptionData: item.descriptionData ?? [],
           groupId: item.groupId,
+          isPrimary: item.isPrimary ?? true,
+          type: (item.type ?? null) as PenalCodeType | null,
           ...(await upsertWarningApplicable({
             body: item,
             cad,

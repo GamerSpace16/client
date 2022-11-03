@@ -1,9 +1,6 @@
 import * as React from "react";
 import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
-import { FormField } from "components/form/FormField";
-import { Button } from "components/Button";
-import { Loader } from "components/Loader";
-import { Textarea } from "components/form/Textarea";
+import { Button, Loader, TextField } from "@snailycad/ui";
 import type { Call911Event, IncidentEvent } from "@snailycad/types";
 import { useTranslations } from "next-intl";
 
@@ -22,7 +19,7 @@ export function UpdateEventForm<T extends IncidentEvent | Call911Event>({
 }: Props<T>) {
   const common = useTranslations("Common");
   const t = useTranslations("Calls");
-  const inputRef = React.useRef<HTMLTextAreaElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
     if (event && inputRef.current) {
@@ -39,22 +36,22 @@ export function UpdateEventForm<T extends IncidentEvent | Call911Event>({
 
   return (
     <Formik onSubmit={onSubmit} initialValues={{ description: event?.description ?? "" }}>
-      {({ handleChange, submitForm, values, errors }) => (
+      {({ setFieldValue, submitForm, values, errors }) => (
         <Form className="md:absolute bottom-0 w-full">
-          <FormField errorMessage={errors.description} label={common("description")}>
-            <Textarea
-              required
-              name="description"
-              value={values.description}
-              onChange={handleChange}
-              onKeyDown={(e) => handleCtrlEnter(e, submitForm)}
-              ref={inputRef}
-            />
-          </FormField>
+          <TextField
+            isTextarea
+            errorMessage={errors.description}
+            label={common("description")}
+            name="description"
+            onChange={(value) => setFieldValue("description", value)}
+            value={values.description}
+            onKeyDown={(e) => handleCtrlEnter(e, submitForm)}
+            inputRef={inputRef}
+          />
 
           <footer className="flex justify-end mt-5">
             {event ? (
-              <Button variant="cancel" onClick={() => setEvent(null)} type="reset">
+              <Button variant="cancel" onPress={() => setEvent(null)} type="reset">
                 {common("cancel")}
               </Button>
             ) : null}

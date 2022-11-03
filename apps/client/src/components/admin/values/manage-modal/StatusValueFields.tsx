@@ -1,12 +1,18 @@
 import { FormField } from "components/form/FormField";
-import { Input } from "components/form/inputs/Input";
 import { Select } from "components/form/Select";
 import { useFormikContext } from "formik";
 import dynamic from "next/dynamic";
-import { QualificationValue, ShouldDoType, StatusValue, Value, WhatPages } from "@snailycad/types";
+import {
+  QualificationValue,
+  ShouldDoType,
+  StatusValue,
+  StatusValueType,
+  Value,
+  WhatPages,
+} from "@snailycad/types";
 
 import { Eyedropper } from "react-bootstrap-icons";
-import { Button } from "components/Button";
+import { Input, Button, SelectField, RadioGroupField, Radio } from "@snailycad/ui";
 import { useValues } from "context/ValuesContext";
 
 const HexColorPicker = dynamic(async () => (await import("react-colorful")).HexColorPicker);
@@ -17,6 +23,8 @@ export const SHOULD_DO_LABELS: Record<ShouldDoType, string> = {
   [ShouldDoType.SET_ON_DUTY]: "Set On duty",
   [ShouldDoType.SET_ASSIGNED]: "Set Assigned",
   [ShouldDoType.PANIC_BUTTON]: "Panic Button",
+  [ShouldDoType.EN_ROUTE]: "En Route",
+  [ShouldDoType.ON_SCENE]: "On Scene",
 };
 
 export const WHAT_PAGES_LABELS: Record<WhatPages, string> = {
@@ -69,25 +77,25 @@ export function StatusValueFields() {
 
   return (
     <>
-      <FormField errorMessage={errors.shouldDo as string} label="Should Do">
-        <Select
-          values={SHOULD_DO_VALUES}
-          name="shouldDo"
-          onChange={handleChange}
-          value={values.shouldDo}
-        />
-      </FormField>
+      <SelectField
+        errorMessage={errors.shouldDo as string}
+        label="Should Do"
+        options={SHOULD_DO_VALUES}
+        name="shouldDo"
+        selectedKey={values.shouldDo}
+        onSelectionChange={(key) => setFieldValue("shouldDo", key)}
+      />
 
-      <FormField errorMessage={errors.whatPages as string} label="What Pages">
-        <Select
-          values={WHAT_PAGES_VALUES}
-          name="whatPages"
-          onChange={handleChange}
-          value={values.whatPages}
-          isMulti
-          closeMenuOnSelect={false}
-        />
-      </FormField>
+      <SelectField
+        errorMessage={errors.whatPages as string}
+        isClearable
+        selectionMode="multiple"
+        label="What Pages"
+        options={WHAT_PAGES_VALUES}
+        name="whatPages"
+        selectedKeys={values.whatPages}
+        onSelectionChange={(keys) => setFieldValue("whatPages", keys)}
+      />
 
       {values.shouldDo === ShouldDoType.SET_ON_DUTY ? null : (
         <FormField errorMessage={errors.departments as string} label="Departments">
@@ -121,7 +129,7 @@ export function StatusValueFields() {
             variant="cancel"
             className="p-0 px-1 ml-2"
             type="button"
-            onClick={() => setFieldValue("showPicker", !values.showPicker)}
+            onPress={() => setFieldValue("showPicker", !values.showPicker)}
             aria-label="Color Picker"
             title="Color Picker"
           >
@@ -130,25 +138,14 @@ export function StatusValueFields() {
         </div>
       </FormField>
 
-      <FormField className="mb-0" checkbox label="Status Code">
-        <Input
-          className="w-[max-content] mr-3"
-          type="radio"
-          name="type"
-          onChange={() => setFieldValue("type", "STATUS_CODE")}
-          checked={values.type === "STATUS_CODE"}
-        />
-      </FormField>
-
-      <FormField checkbox label="Situation Code">
-        <Input
-          className="w-[max-content] mr-3"
-          type="radio"
-          name="type"
-          onChange={() => setFieldValue("type", "SITUATION_CODE")}
-          checked={values.type === "SITUATION_CODE"}
-        />
-      </FormField>
+      <RadioGroupField
+        value={values.type}
+        onChange={(value) => setFieldValue("type", value)}
+        label="Code Type"
+      >
+        <Radio value={StatusValueType.STATUS_CODE}>Status Code</Radio>
+        <Radio value={StatusValueType.SITUATION_CODE}>Situation Code</Radio>
+      </RadioGroupField>
     </>
   );
 }

@@ -7,15 +7,13 @@ import { AlertModal } from "components/modal/AlertModal";
 import useFetch from "lib/useFetch";
 import { Form, Formik } from "formik";
 import { CREATE_COMPANY_SCHEMA } from "@snailycad/schemas";
-import { Input } from "components/form/inputs/Input";
+import { Button, Loader, Input } from "@snailycad/ui";
 import { handleValidate } from "lib/handleValidate";
 import { Toggle } from "components/form/Toggle";
-import { Button } from "components/Button";
-import { Loader } from "components/Loader";
 import { useRouter } from "next/router";
 import { SettingsFormField } from "components/form/SettingsFormField";
-import { FormRow } from "components/form/FormRow";
 import type { DeleteBusinessByIdData, PutBusinessByIdData } from "@snailycad/types/api";
+import { AddressPostalSelect } from "components/form/select/PostalSelect";
 
 export function ManageBusinessTab() {
   const { state, execute } = useFetch();
@@ -88,21 +86,7 @@ export function ManageBusinessTab() {
               errorMessage={errors.address}
               label={t("address")}
             >
-              <FormRow flexLike>
-                <Input
-                  className="w-full"
-                  name="address"
-                  onChange={handleChange}
-                  value={values.address}
-                />
-                <Input
-                  className="w-[200px]"
-                  name="postal"
-                  onChange={handleChange}
-                  value={values.postal}
-                  placeholder={common("postal")}
-                />
-              </FormRow>
+              <AddressPostalSelect />
             </SettingsFormField>
 
             <SettingsFormField
@@ -120,7 +104,7 @@ export function ManageBusinessTab() {
 
             <footer className="flex justify-between mt-5">
               <Button
-                onClick={() => openModal(ModalIds.AlertDeleteBusiness)}
+                onPress={() => openModal(ModalIds.AlertDeleteBusiness)}
                 type="reset"
                 variant="danger"
               >
@@ -147,7 +131,6 @@ export function ManageBusinessTab() {
         title={t("deleteBusiness")}
         description={t.rich("alert_deleteBusiness", {
           business: currentBusiness.name,
-          span: (children) => <span className="font-semibold">{children}</span>,
         })}
         deleteText={t("deleteBusiness")}
         state={state}

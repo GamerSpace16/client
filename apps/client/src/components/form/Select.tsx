@@ -1,4 +1,3 @@
-import * as React from "react";
 import { useTranslations } from "use-intl";
 import ReactSelect, {
   Props as SelectProps,
@@ -205,6 +204,8 @@ export function styles({
     }),
     control: (base, state) => ({
       ...base,
+      opacity: state.isDisabled ? 0.7 : undefined,
+      cursor: state.isDisabled ? "not-allowed !important" : undefined,
       background: backgroundColor,
       borderRadius: "0.375rem",
       overflow: "hidden",
@@ -245,5 +246,10 @@ export function styles({
       color,
     }),
     menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+    container: (base, state) => ({
+      ...base,
+      opacity: state.isDisabled ? 0.7 : undefined,
+      cursor: state.isDisabled ? "not-allowed !important" : undefined,
+    }),
   };
 }
